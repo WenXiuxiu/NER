@@ -6,6 +6,7 @@ This is a temporary script file.
 """
 import os
 import re
+import pickle
 class wordTagAligment():
     def __init__(self,targetFolder):
         self.targetFloder = targetFolder
@@ -24,7 +25,6 @@ class wordTagAligment():
                     yield [f[:-3], os.path.join(FilesPath,f),annfile]
         return
     def alignWordTag(self,FilesPath):
-        i = 1
         for idx, txtpath,annpath in self.getSourceFiles(FilesPath,'txt'):
             with open(txtpath,encoding='utf-8') as txtf:
                 contents = txtf.read()
@@ -32,30 +32,26 @@ class wordTagAligment():
                     return
                 wordlist = list(contents)
                 taglist = ['O']*len(wordlist)
-                with open(annfile, enciding='utf-8') as annf:
+                with open(annpath, encoding='utf-8') as annf:
+                    print('processing',idx)
                     for line in annf:
                         formatFlag, formatedRes = self.formatLine(line)
                         if( formatFlag):
-                            begin = int(formatedRes[0])
-                            end = int(formatedRes[1])
+                            begin = int(formatedRes[1])
+                            end = int(formatedRes[2])
                             if(end-begin>2):
                                 taglist[begin:end] = ['I_'+formatedRes[0]]*(end-begin)
                                 taglist[begin] = 'B_'+formatedRes[0]
                                 taglist[end-1] = 'E_'+formatedRes[0]
                             else:
                                 taglist[begin] = 'S_'+formatedRes[0]
+                    with open(os.path.join(self.targetFloder,idx+'.pkl') ,'wb') as targetfile:
+                        pickle.dump(list(zip(wordlist,taglist)),targetfile)
+                        
     def formatLine(self,line):
         objgroups = re.match(r'T\d*\t(\S*) (\d*) (\d*)\t(.+)',line)
         if(objgroups==None):
             return [False,[]]
         else:
             return [True,list(objgroups.groups())]
-        
-                            
- 
-w = wordTagAligment('/home/alice/coding/python/ner_mmc/dataWordTagligment') 
-w.alignWordTag('/home/alice/coding/python/ner_mmc/ruijin_round1_train_20181022')           
-            
-    
-        
         
