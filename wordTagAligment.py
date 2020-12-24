@@ -32,23 +32,29 @@ class wordTagAligment():
                     return
                 wordlist = list(contents)
                 taglist = ['O']*len(wordlist)
-                with open(annpath,encoding='utf-8') as annf:
+                with open(annfile, enciding='utf-8') as annf:
                     for line in annf:
-                        print(line)
-                    
-    
-    def extractFromLine(self,line):
+                        formatFlag, formatedRes = self.formatLine(line)
+                        if( formatFlag):
+                            begin = int(formatedRes[0])
+                            end = int(formatedRes[1])
+                            if(end-begin>2):
+                                taglist[begin:end] = ['I_'+formatedRes[0]]*(end-begin)
+                                taglist[begin] = 'B_'+formatedRes[0]
+                                taglist[end-1] = 'E_'+formatedRes[0]
+                            else:
+                                taglist[begin] = 'S_'+formatedRes[0]
+    def formatLine(self,line):
         objgroups = re.match(r'T\d*\t(\S*) (\d*) (\d*)\t(.+)',line)
         if(objgroups==None):
-            return [False, []]
+            return [False,[]]
         else:
-            return [True, list(objgroups.groups())]
+            return [True,list(objgroups.groups())]
         
-        
-                        
-
+                            
+ 
 w = wordTagAligment('/home/alice/coding/python/ner_mmc/dataWordTagligment') 
-print(w.extractFromLine('T357    Reason 4396 4405        垂体内分泌细胞毁损'))
+w.alignWordTag('/home/alice/coding/python/ner_mmc/ruijin_round1_train_20181022')           
             
     
         
